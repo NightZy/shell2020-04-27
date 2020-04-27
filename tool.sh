@@ -95,6 +95,7 @@ getlink(){
 	return 0
 }
 
+# 配置SSR并重启
 SSRconfig(){
 	local config="\
 {
