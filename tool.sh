@@ -16,8 +16,6 @@ SSR_PORT=10808
 HA_CFG_FILE='/etc/haproxy/haproxy.cfg'
 # HAproxy 本地端口
 HA_PORT=10800
-# HAproxy server option，用于检查各服务器是否在线及断线恢复
-PARAM='check inter 500 rise 2 fall 4'
 # HAproxy 基本配置，各服务器的配置将会被追加在后面
 CONFIG="\
 global
@@ -36,8 +34,14 @@ defaults
 	timeout client 3000
 	timeout server 3000
 
+resolvers mydns
+	nameserver d1 192.168.3.1:53
+	nameserver d2 114.114.114.114:53
+	nameserver d3 223.5.5.5:53
+
 listen server
 	bind 0.0.0.0:${HA_PORT}
+	default-server check inter 500 rise 2 fall 4 resolvers mydns init-addr last,libc,none
 "
 ###########################################################
 ######################################################################################
@@ -184,7 +188,7 @@ main(){
 					identical=false
 				fi
 			fi
-			config=${config}"\tserver s${i} "$(echo ${nodeinfo} | cut -d \& -f1)":"$(echo ${nodeinfo} | cut -d \& -f2)" "${PARAM}"\n"
+			config=${config}"\tserver s${i} "$(echo ${nodeinfo} | cut -d \& -f1)":"$(echo ${nodeinfo} | cut -d \& -f2)"\n"
 		fi
 		i=$(expr ${i} + 1)
 	done
